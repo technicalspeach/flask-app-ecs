@@ -1,0 +1,29 @@
+# === STAGE 1: Builder Stage ===
+FROM python:3.10-slim AS builder
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+# Packages ko container ke andar aik specific folder (.local) mein install karein
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+
+# === STAGE 2: Final Stage (Production Ready) ===
+# Hum 'alpine' version use kar rahe hain jo sab se chota aur secure hota hai
+FROM python:3.10-alpine
+
+WORKDIR /app
+
+# Stage 1 (builder) se sirf install kiye gaye packages copy karein
+COPY --from=builder /root/.local /root/.local
+COPY app.py .
+
+# Path set karein taake Python ko pata chale packages kahan hain
+ENV PATH=/root/.local/bin:$PATH
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]
+
+
