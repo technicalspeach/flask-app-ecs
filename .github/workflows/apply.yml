@@ -1,0 +1,26 @@
+name: Deploy Flask App to VMware
+
+on:
+  push:
+    branches:
+      - main  # Ya jo bhi aapki default branch hai
+
+jobs:
+  deploy:
+    runs-on: self-hosted  # Yeh aapke VMware runner ko target karega
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Stop Old Container
+        run: |
+          docker stop flask-container || true
+          docker rm flask-container || true
+
+      - name: Pull Latest Docker Image
+        run: docker pull yasiralisiddiqui/my-flask-app:latest
+
+      - name: Run New Container
+        run: docker run -d -p 5000:5000 --name flask-container yasiralisiddiqui/my-flask-app:latest
+
